@@ -7,7 +7,7 @@ How do I install these formulae?
 --------------------------------
 Just `brew tap vibes/software` and then `brew install <formula>`.
 
-If the formula conflicts with one from mxcl/master or another tap, you can `brew install homebrew/versions/<formula>`.
+If the formula conflicts with one from mxcl/master or another tap, you can `brew install vibes/software/<formula>`.
 
 You can also install via URL:
 
