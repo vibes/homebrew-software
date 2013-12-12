@@ -15,6 +15,15 @@ You can also install via URL:
 brew install https://raw.github.com/vibes/homebrew-software/master/<formula>.rb
 ```
 
+How do I update a package without reinstalling?
+----------------------------------------------
+for many of the formula, you can re-run the post install steps for
+helpful updates.
+
+```
+brew postinstall <formula>
+```
+
 Docs
 ----
 `brew help`, `man brew`, or the Homebrew [wiki][].
