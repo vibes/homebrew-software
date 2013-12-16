@@ -24,6 +24,11 @@ helpful updates.
 brew postinstall <formula>
 ```
 
+Test Edit
+---------
+
+This is a test edit
+
 Docs
 ----
 `brew help`, `man brew`, or the Homebrew [wiki][].
