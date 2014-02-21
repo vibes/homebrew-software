@@ -2,8 +2,8 @@ require 'formula'
 
 class VibesPostgresql < Formula
   homepage 'http://www.postgresql.org/'
-  url 'http://ftp.postgresql.org/pub/source/v9.3.2/postgresql-9.3.2.tar.bz2'
-  sha256 '700da51a71857e092f6af1c85fcd86b46d7d5cd2f2ba343cafb1f206c20232d7'
+  url 'http://ftp.postgresql.org/pub/source/v9.3.3/postgresql-9.3.3.tar.bz2'
+  sha256 'e925d8abe7157bd8bece6b7c0dd0c343d87a2b4336f85f4681ce596af99c3879'
 
   option '32-bit'
   option 'no-perl', 'Build without Perl support'
@@ -81,7 +81,7 @@ class VibesPostgresql < Formula
     s = <<-EOS.undent
     If builds of PostgreSQL 9 are failing and you have version 8.x installed,
     you may need to remove the previous version first. See:
-      https://github.com/mxcl/homebrew/issues/issue/2510
+      https://github.com/Homebrew/homebrew/issues/issue/2510
 
     To migrate existing data from a previous major version (pre-9.3) of PostgreSQL, see:
       http://www.postgresql.org/docs/9.3/static/upgrading.html
