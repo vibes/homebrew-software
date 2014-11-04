@@ -1,1 +1,1 @@
-vibes-postgresql93.rb
+vibes-postgresql92.rb
