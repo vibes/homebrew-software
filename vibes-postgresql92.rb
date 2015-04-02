@@ -85,15 +85,17 @@ class VibesPostgresql < Formula
       postgres -D #{var}/postgres       # serve that database
       PGDATA=#{var}/postgres postgres   # …alternatively
 
-      If builds of PostgreSQL 9 are failing and you have version 8.x installed,
-      you may need to remove the previous version first. See:
-        https://github.com/mxcl/homebrew/issues/issue/2510
+      Mac OS X doesn't allow enough shared memory to be allocated by postgres out of the box, so we have to adjust it.
 
-      To migrate existing data from a previous major version (pre-9.2) of PostgreSQL, see:
-        http://www.postgresql.org/docs/9.2/static/upgrading.html
+      The following commands will make the increase:
 
-      Some machines may require provisioning of shared memory:
-        http://www.postgresql.org/docs/9.2/static/kernel-resources.html#SYSVIPC
+        sudo sysctl kern.sysv.shmall=65536
+        sudo sysctl kern.sysv.shmmax=16777216
+
+      You can then create a /etc/sysctl.conf file with the following so this setting will be preserved across restarts
+
+        kern.sysv.shmall=65536
+        kern.sysv.shmmax=16777216
     EOS
 
     s << "\n" << gem_caveats if MacOS.prefer_64_bit?
