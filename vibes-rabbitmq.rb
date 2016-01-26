@@ -1,40 +1,43 @@
-require 'formula'
-
 class VibesRabbitmq < Formula
-  homepage 'http://www.rabbitmq.com'
-  url 'https://www.rabbitmq.com/releases/rabbitmq-server/v3.4.2/rabbitmq-server-mac-standalone-3.4.2.tar.gz'
-  sha1 'ab12e703e7b78f8573d6fbb325dcb180fd63129f'
+  desc "Messaging broker"
+  homepage "https://www.rabbitmq.com"
+  url "https://www.rabbitmq.com/releases/rabbitmq-server/v3.5.7/rabbitmq-server-mac-standalone-3.5.7.tar.gz"
+  sha256 "48a2acb30c1731f82303ef8fe3447a5f643ea7327bb8503e44149790ed7d5a7d"
 
-  depends_on 'simplejson' => :python if MacOS.version <= :leopard
+  bottle :unneeded
 
-  conflicts_with 'rabbitmq',
-    :because => 'they are really the same thing'
+  depends_on "simplejson" => :python if MacOS.version <= :leopard
+
+  conflicts_with "rabbitmq",
+    :because => "they are really the same thing"
+
+    RMQ_PLUGINS = %w(rabbitmq_management rabbitmq_stomp rabbitmq_shovel rabbitmq_shovel_management rabbitmq_federation rabbitmq_federation_management)
 
   def install
     # Install the base files
-    prefix.install Dir['*']
+    prefix.install Dir["*"]
 
     # Setup the lib files
-    (var+'lib/rabbitmq').mkpath
-    (var+'log/rabbitmq').mkpath
+    (var+"lib/rabbitmq").mkpath
+    (var+"log/rabbitmq").mkpath
 
     # Correct SYS_PREFIX for things like rabbitmq-plugins
-    inreplace sbin/'rabbitmq-defaults' do |s|
-      s.gsub! 'SYS_PREFIX=${RABBITMQ_HOME}', "SYS_PREFIX=#{HOMEBREW_PREFIX}"
+    inreplace sbin/"rabbitmq-defaults" do |s|
+      s.gsub! "SYS_PREFIX=${RABBITMQ_HOME}", "SYS_PREFIX=#{HOMEBREW_PREFIX}"
       s.gsub! 'CLEAN_BOOT_FILE="${SYS_PREFIX}', "CLEAN_BOOT_FILE=\"#{prefix}"
       s.gsub! 'SASL_BOOT_FILE="${SYS_PREFIX}', "SASL_BOOT_FILE=\"#{prefix}"
     end
 
     # Set RABBITMQ_HOME in rabbitmq-env
-    inreplace (sbin + 'rabbitmq-env'), 'RABBITMQ_HOME="${SCRIPT_DIR}/.."', "RABBITMQ_HOME=#{prefix}"
+    inreplace (sbin + "rabbitmq-env"), 'RABBITMQ_HOME="${SCRIPT_DIR}/.."', "RABBITMQ_HOME=#{prefix}"
 
     # Create the rabbitmq-env.conf file
-    rabbitmq_env_conf = etc+'rabbitmq/rabbitmq-env.conf'
+    rabbitmq_env_conf = etc+"rabbitmq/rabbitmq-env.conf"
     rabbitmq_env_conf.write rabbitmq_env unless rabbitmq_env_conf.exist?
 
-    # Enable plugins - management web UI and STOMP protocol
-    enabled_plugins_path = etc+'rabbitmq/enabled_plugins'
-    enabled_plugins_path.write '[rabbitmq_management,rabbitmq_stomp].' unless enabled_plugins_path.exist?
+    # Enable plugins
+    enabled_plugins_path = etc+"rabbitmq/enabled_plugins"
+    enabled_plugins_path.write "[#{RMQ_PLUGINS.join(",")}]." unless enabled_plugins_path.exist?
 
     # Extract rabbitmqadmin and install to sbin
     # use it to generate, then install the bash completion file
@@ -42,13 +45,13 @@ class VibesRabbitmq < Formula
            "#{prefix}/plugins/rabbitmq_management-#{version}.ez",
            "rabbitmq_management-#{version}/priv/www/cli/rabbitmqadmin"
 
-    sbin.install 'rabbitmqadmin'
-    (sbin/'rabbitmqadmin').chmod 0755
-    (bash_completion/'rabbitmqadmin.bash').write `#{sbin}/rabbitmqadmin --bash-completion`
+    sbin.install "rabbitmqadmin"
+    (sbin/"rabbitmqadmin").chmod 0755
+    (bash_completion/"rabbitmqadmin.bash").write `#{sbin}/rabbitmqadmin --bash-completion`
   end
 
   def post_install
-    %w(rabbitmq_management rabbitmq_federation rabbitmq_federation_management rabbitmq_stomp rabbitmq_web_stomp).each do |plugin|
+    RMQ_PLUGINS.each do |plugin|
       ensure_plugin_installed(plugin)
     end
   end
@@ -69,7 +72,7 @@ class VibesRabbitmq < Formula
     EOS
   end
 
-  plist_options :manual => 'rabbitmq-server'
+  plist_options :manual => "rabbitmq-server"
 
   def plist; <<-EOS.undent
     <?xml version="1.0" encoding="UTF-8"?>
