@@ -26,6 +26,4 @@ brew postinstall <formula>
 
 Docs
 ----
-`brew help`, `man brew`, or the Homebrew [wiki][].
-
-[wiki]:http://wiki.github.com/mxcl/homebrew
+`brew help`, `man brew`
