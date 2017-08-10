@@ -3,7 +3,7 @@ class VibesRedis < Formula
   url "http://download.redis.io/releases/redis-2.8.19.tar.gz"
   sha256 "29bb08abfc3d392b2f0c3e7f48ec46dd09ab1023f9a5575fc2a93546f4ca5145"
 
-  fails_with :llvm do
+  fails_with :clang do
     build 2334
     cause "Fails with 'reference out of range from _linenoise'"
   end
