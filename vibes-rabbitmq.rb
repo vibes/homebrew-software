@@ -6,8 +6,6 @@ class VibesRabbitmq < Formula
 
   bottle :unneeded
 
-  depends_on "openssl"
-
   conflicts_with "rabbitmq",
     :because => "they are really the same thing"
 
