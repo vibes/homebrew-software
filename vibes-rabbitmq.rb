@@ -6,12 +6,12 @@ class VibesRabbitmq < Formula
 
   bottle :unneeded
 
-  depends_on "simplejson" => :python if MacOS.version <= :leopard
+  depends_on "openssl"
 
   conflicts_with "rabbitmq",
     :because => "they are really the same thing"
 
-    RMQ_PLUGINS = %w(rabbitmq_management rabbitmq_stomp rabbitmq_shovel rabbitmq_shovel_management rabbitmq_federation rabbitmq_federation_management)
+  RMQ_PLUGINS = %w[rabbitmq_management rabbitmq_stomp rabbitmq_shovel rabbitmq_shovel_management rabbitmq_federation rabbitmq_federation_management].freeze
 
   def install
     # Install the base files
@@ -57,15 +57,15 @@ class VibesRabbitmq < Formula
   end
 
   def ensure_plugin_installed(plugin)
-    system "#{sbin}/rabbitmq-plugins enable #{plugin}"
+    system "#{sbin}/rabbitmq-plugins", "enable", plugin
   end
 
-  def caveats; <<-EOS.undent
+  def caveats; <<~EOS
     Management Plugin enabled by default at http://localhost:15672
     EOS
   end
 
-  def rabbitmq_env; <<-EOS.undent
+  def rabbitmq_env; <<~EOS
     CONFIG_FILE=#{etc}/rabbitmq/rabbitmq
     NODE_IP_ADDRESS=127.0.0.1
     NODENAME=rabbit@localhost
@@ -74,7 +74,7 @@ class VibesRabbitmq < Formula
 
   plist_options :manual => "rabbitmq-server"
 
-  def plist; <<-EOS.undent
+  def plist; <<~EOS
     <?xml version="1.0" encoding="UTF-8"?>
     <!DOCTYPE plist PUBLIC "-//Apple Computer//DTD PLIST 1.0//EN"
     "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
@@ -100,4 +100,3 @@ class VibesRabbitmq < Formula
     EOS
   end
 end
-
