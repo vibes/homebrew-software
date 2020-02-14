@@ -1,8 +1,8 @@
 class VibesRabbitmq < Formula
   desc "Messaging broker"
   homepage "https://www.rabbitmq.com"
-  url "https://www.rabbitmq.com/releases/rabbitmq-server/v3.5.7/rabbitmq-server-mac-standalone-3.5.7.tar.gz"
-  sha256 "48a2acb30c1731f82303ef8fe3447a5f643ea7327bb8503e44149790ed7d5a7d"
+  url "https://github.com/rabbitmq/rabbitmq-server/releases/download/v3.8.1/rabbitmq-server-generic-unix-3.8.1.tar.xz"
+  sha256 "a21f012ba71dfe192763aad1384388b8dd0d9907ae61ce6d0b3055d47dcf336e"
 
   bottle :unneeded
 
@@ -10,31 +10,36 @@ class VibesRabbitmq < Formula
     :because => "they are really the same thing"
 
   RMQ_PLUGINS = %w[rabbitmq_management rabbitmq_stomp rabbitmq_shovel rabbitmq_shovel_management rabbitmq_federation rabbitmq_federation_management].freeze
+  depends_on "erlang"
 
   def install
     # Install the base files
     prefix.install Dir["*"]
 
     # Setup the lib files
-    (var+"lib/rabbitmq").mkpath
-    (var+"log/rabbitmq").mkpath
+    (var/"lib/rabbitmq").mkpath
+    (var/"log/rabbitmq").mkpath
 
     # Correct SYS_PREFIX for things like rabbitmq-plugins
+    erlang = Formula["erlang"]
     inreplace sbin/"rabbitmq-defaults" do |s|
       s.gsub! "SYS_PREFIX=${RABBITMQ_HOME}", "SYS_PREFIX=#{HOMEBREW_PREFIX}"
-      s.gsub! 'CLEAN_BOOT_FILE="${SYS_PREFIX}', "CLEAN_BOOT_FILE=\"#{prefix}"
-      s.gsub! 'SASL_BOOT_FILE="${SYS_PREFIX}', "SASL_BOOT_FILE=\"#{prefix}"
+      s.gsub! /^ERL_DIR=$/, "ERL_DIR=#{erlang.opt_bin}/"
+      s.gsub! "CLEAN_BOOT_FILE=start_clean", "CLEAN_BOOT_FILE=#{erlang.opt_lib/"erlang/bin/start_clean"}"
+      s.gsub! "SASL_BOOT_FILE=start_sasl", "SASL_BOOT_FILE=#{erlang.opt_lib/"erlang/bin/start_clean"}"
     end
 
     # Set RABBITMQ_HOME in rabbitmq-env
-    inreplace (sbin + "rabbitmq-env"), 'RABBITMQ_HOME="${SCRIPT_DIR}/.."', "RABBITMQ_HOME=#{prefix}"
+    inreplace sbin/"rabbitmq-env",
+              'RABBITMQ_HOME="$(rmq_realpath "${RABBITMQ_SCRIPTS_DIR}/..")"',
+              "RABBITMQ_HOME=#{prefix}"
 
     # Create the rabbitmq-env.conf file
-    rabbitmq_env_conf = etc+"rabbitmq/rabbitmq-env.conf"
+    rabbitmq_env_conf = etc/"rabbitmq/rabbitmq-env.conf"
     rabbitmq_env_conf.write rabbitmq_env unless rabbitmq_env_conf.exist?
 
-    # Enable plugins
-    enabled_plugins_path = etc+"rabbitmq/enabled_plugins"
+    # Enable plugins - management web UI; STOMP, MQTT, AMQP 1.0 protocols
+    enabled_plugins_path = etc/"rabbitmq/enabled_plugins"
     enabled_plugins_path.write "[#{RMQ_PLUGINS.join(",")}]." unless enabled_plugins_path.exist?
 
     # Extract rabbitmqadmin and install to sbin
@@ -45,29 +50,20 @@ class VibesRabbitmq < Formula
 
     sbin.install "rabbitmqadmin"
     (sbin/"rabbitmqadmin").chmod 0755
-    (bash_completion/"rabbitmqadmin.bash").write `#{sbin}/rabbitmqadmin --bash-completion`
-  end
-
-  def post_install
-    RMQ_PLUGINS.each do |plugin|
-      ensure_plugin_installed(plugin)
-    end
-  end
-
-  def ensure_plugin_installed(plugin)
-    system "#{sbin}/rabbitmq-plugins", "enable", plugin
+    (bash_completion/"rabbitmqadmin.bash").write Utils.popen_read("#{sbin}/rabbitmqadmin --bash-completion")
   end
 
   def caveats; <<~EOS
     Management Plugin enabled by default at http://localhost:15672
-    EOS
+  EOS
   end
 
   def rabbitmq_env; <<~EOS
     CONFIG_FILE=#{etc}/rabbitmq/rabbitmq
     NODE_IP_ADDRESS=127.0.0.1
     NODENAME=rabbit@localhost
-    EOS
+    RABBITMQ_LOG_BASE=#{var}/log/rabbitmq
+  EOS
   end
 
   plist_options :manual => "rabbitmq-server"
@@ -88,13 +84,25 @@ class VibesRabbitmq < Formula
         <dict>
           <!-- need erl in the path -->
           <key>PATH</key>
-          <string>/usr/local/sbin:/usr/bin:/bin:/usr/local/bin</string>
+          <string>#{HOMEBREW_PREFIX}/sbin:/usr/sbin:/usr/bin:/bin:#{HOMEBREW_PREFIX}/bin</string>
           <!-- specify the path to the rabbitmq-env.conf file -->
           <key>CONF_ENV_FILE</key>
           <string>#{etc}/rabbitmq/rabbitmq-env.conf</string>
         </dict>
+        <key>StandardErrorPath</key>
+        <string>#{var}/log/rabbitmq/std_error.log</string>
+        <key>StandardOutPath</key>
+        <string>#{var}/log/rabbitmq/std_out.log</string>
       </dict>
     </plist>
-    EOS
+  EOS
+  end
+
+  test do
+    ENV["RABBITMQ_MNESIA_BASE"] = testpath/"var/lib/rabbitmq/mnesia"
+    system sbin/"rabbitmq-server", "-detached"
+    sleep 5
+    system sbin/"rabbitmqctl", "status"
+    system sbin/"rabbitmqctl", "stop"
   end
 end
