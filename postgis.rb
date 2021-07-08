@@ -1,3 +1,6 @@
+# typed: false
+# frozen_string_literal: true
+
 class Postgis < Formula
   desc "Adds support for geographic objects to PostgreSQL"
   homepage "http://postgis.net"
@@ -5,10 +8,9 @@ class Postgis < Formula
   sha256 "0fe500b0250203aac656bfa8f42f8458b63f33258404844e066e0e535988fa09"
 
   bottle do
-    cellar :any
-    sha256 "2dd01d3e7b0a5a8c7b69bdbd8389ab8d857de755e393e213dc818828fb0dd540" => :el_capitan
-    sha256 "6aed14810aea9784c4dc2a00ec825bb6032f200e7512c9611a41a82fba1e6d55" => :yosemite
-    sha256 "2d4df95d9aa6609d8bf7409be18a4173b7ba7d364a3df1e0a8445d330ae8fbb2" => :mavericks
+    sha256 cellar: :any, el_capitan: "2dd01d3e7b0a5a8c7b69bdbd8389ab8d857de755e393e213dc818828fb0dd540"
+    sha256 cellar: :any, yosemite:   "6aed14810aea9784c4dc2a00ec825bb6032f200e7512c9611a41a82fba1e6d55"
+    sha256 cellar: :any, mavericks:  "2d4df95d9aa6609d8bf7409be18a4173b7ba7d364a3df1e0a8445d330ae8fbb2"
   end
 
   head do
@@ -24,16 +26,15 @@ class Postgis < Formula
   option "with-html-docs", "Generate multi-file HTML documentation"
   option "with-api-docs", "Generate developer API documentation (long process)"
 
-  depends_on "pkg-config" => :build
   depends_on "gpp" => :build
-  depends_on "vibes/software/postgresql"
-  depends_on "proj"
+  depends_on "pkg-config" => :build
   depends_on "geos"
-
   depends_on "gtk+" if build.with? "gui"
+  depends_on "json-c"
+  depends_on "proj"
+  depends_on "vibes/software/postgresql"
 
   # For GeoJSON and raster handling
-  depends_on "json-c"
   depends_on "gdal" => :recommended
   depends_on "pcre" => :build if build.with? "gdal"
 
@@ -128,7 +129,7 @@ class Postgis < Formula
         #{HOMEBREW_PREFIX}/lib
       PostGIS extension modules installed to:
         #{HOMEBREW_PREFIX}/share/postgresql/extension
-      EOS
+    EOS
   end
 
   test do
@@ -137,7 +138,7 @@ class Postgis < Formula
     (testpath/"brew.dbf").write(::Base64.decode64("A3IJGgUAAABhAFsAAAAAAAAAAAAAAAAAAAAAAAAAAABGSVJTVF9GTEQAAEMA\nAAAAMgAAAAAAAAAAAAAAAAAAAFNFQ09ORF9GTEQAQwAAAAAoAAAAAAAAAAAA\nAAAAAAAADSBGaXJzdCAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAg\nICAgICAgICAgICAgIFBvaW50ICAgICAgICAgICAgICAgICAgICAgICAgICAg\nICAgICAgICAgU2Vjb25kICAgICAgICAgICAgICAgICAgICAgICAgICAgICAg\nICAgICAgICAgICAgICBQb2ludCAgICAgICAgICAgICAgICAgICAgICAgICAg\nICAgICAgICAgIFRoaXJkICAgICAgICAgICAgICAgICAgICAgICAgICAgICAg\nICAgICAgICAgICAgICAgUG9pbnQgICAgICAgICAgICAgICAgICAgICAgICAg\nICAgICAgICAgICBGb3VydGggICAgICAgICAgICAgICAgICAgICAgICAgICAg\nICAgICAgICAgICAgICAgIFBvaW50ICAgICAgICAgICAgICAgICAgICAgICAg\nICAgICAgICAgICAgQXBwZW5kZWQgICAgICAgICAgICAgICAgICAgICAgICAg\nICAgICAgICAgICAgICAgICBQb2ludCAgICAgICAgICAgICAgICAgICAgICAg\nICAgICAgICAgICAg\n"))
     (testpath/"brew.shx").write(::Base64.decode64("AAAnCgAAAAAAAAAAAAAAAAAAAAAAAAAAAAAARugDAAALAAAAAAAAAAAAAAAA\nAAAAAADwPwAAAAAAABBAAAAAAAAAFEAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA\nAAAAAAAAAAAAAAAAADIAAAASAAAASAAAABIAAABeAAAAEgAAAHQAAAASAAAA\nigAAABI=\n"))
     result = shell_output("#{bin}/shp2pgsql #{testpath}/brew.shp")
-    assert_match /Point/, result
-    assert_match /AddGeometryColumn/, result
+    assert_match(/Point/, result)
+    assert_match(/AddGeometryColumn/, result)
   end
 end
