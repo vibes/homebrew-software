@@ -4,7 +4,6 @@ class VibesRabbitmq < Formula
   url "https://github.com/rabbitmq/rabbitmq-server/releases/download/v3.8.1/rabbitmq-server-generic-unix-3.8.1.tar.xz"
   sha256 "a21f012ba71dfe192763aad1384388b8dd0d9907ae61ce6d0b3055d47dcf336e"
 
-  bottle :unneeded
 
   conflicts_with "rabbitmq",
     :because => "they are really the same thing"
